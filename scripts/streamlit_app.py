@@ -6,7 +6,7 @@ import qrcode
 import torch
 import torchvision.models as models
 import torchvision.transforms as transforms
-from pyzbar.pyzbar import decode
+import cv2
 import json
 from datetime import datetime
 
@@ -114,12 +114,15 @@ def verify_return(returned_file, product_id, threshold=0.75):
 
     return is_verified, similarity
 
+# ===============================
+# Decode QR using OpenCV
+# ===============================
 def decode_qr(qr_file):
-    img = np.array(Image.open(qr_file).convert("RGB"))
-    decoded = decode(img)
-    if decoded:
-        return decoded[0].data.decode("utf-8")
-    return None
+    file_bytes = np.frombuffer(qr_file.read(), np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    detector = cv2.QRCodeDetector()
+    data, bbox, _ = detector.detectAndDecode(img)
+    return data if data else None
 
 # ===============================
 # Streamlit UI
