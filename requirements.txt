@@ -4,4 +4,6 @@ torchvision
 numpy
 Pillow
 qrcode
+pyzbar
 opencv-python
+
