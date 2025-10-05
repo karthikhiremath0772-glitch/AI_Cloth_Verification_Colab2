@@ -1,44 +1,46 @@
-from scripts.ai_feature_extractor import extract_features
-from scripts.generate_qr import generate_qr_for_product as generate_qr
-from scripts.verify_return import verify_returned_product
-
-
+# app.py
 import streamlit as st
 from PIL import Image
-import numpy as np
-import os
-
-# Import your AI scripts
 from scripts.ai_feature_extractor import extract_features
-from scripts.generate_qr import generate_qr_for_product as generate_qr   # ✅ fixed import
-from scripts.verify_return import verify_returned_product
+from scripts.generate_qr import generate_qr_for_product
+from scripts.decode_qr import decode_qr
 
+st.set_page_config(page_title="AI Cloth Verification", layout="centered")
 st.title("✅ AI Cloth Verification")
 st.write("Upload a cloth image to verify the product using AI")
 
-# File uploader
+# --- Step 0: Upload Image ---
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    # Save uploaded image temporarily
-    img = Image.open(uploaded_file)
-    st.image(img, caption="Uploaded Image", use_container_width=True)
-    st.write("Image uploaded successfully ✅")
-
-    # Step 1: Extract Features
+    # Open image as PIL and convert to RGB
+    img = Image.open(uploaded_file).convert("RGB")
+    st.image(img, caption="Uploaded Image", use_column_width=True)
+    
     st.write("Processing the image with AI...")
-    features = extract_features(np.array(img))
-    st.write("Features extracted successfully ✅")
 
-    # Step 2: Generate QR
-    st.subheader("Generated QR Code")
-    qr_path = generate_qr("sample_product", "data/products")
-    qr_img = Image.open(qr_path)
-    st.image(qr_img, caption="QR Code", use_container_width=True)
-    st.write("QR code generated ✅")
+    # --- Step 1: Extract Features ---
+    try:
+        features = extract_features(img)  # Pass PIL Image directly
+        st.success("Features extracted successfully ✅")
+    except Exception as e:
+        st.error(f"Error in feature extraction: {e}")
+        st.stop()
 
-    # Step 3: Verify Return
-    result, score = verify_returned_product(features, features)  # Dummy check with same features
-    st.subheader("Verification Result")
-    st.write(f"Result: **{result}**")
-    st.write(f"Similarity Score: {score:.2f}")
+    # --- Step 2: Generate QR Code ---
+    try:
+        qr_img = generate_qr_for_product(features)
+        st.image(qr_img, caption="QR Code", width=250)
+        st.success("QR code generated ✅")
+    except Exception as e:
+        st.error(f"Error generating QR code: {e}")
+        st.stop()
+
+    # --- Step 3: Optional Verification ---
+    try:
+        decoded_features = decode_qr(qr_img)
+        st.write("Decoded features from QR:")
+        st.write(decoded_features[:10], "...")  # show first 10 values
+        st.success("QR code verified successfully ✅")
+    except Exception as e:
+        st.error(f"Error decoding QR code: {e}")
