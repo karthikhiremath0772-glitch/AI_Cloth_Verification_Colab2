@@ -1,8 +1,5 @@
-streamlit
-opencv-python
-numpy
-Pillow
+opencv-python-headless
 pyzbar
-scikit-learn
-torch
-torchvision
+Pillow
+numpy
+streamlit
