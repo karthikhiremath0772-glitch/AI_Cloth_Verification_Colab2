@@ -1,57 +1,28 @@
-from scripts.decode_qr import decode_qr_to_features
-
-# Example
-features = decode_qr_to_features("path/to/qr_image.png")
-if features is not None:
-    st.write("QR decoded successfully!", features)
-else:
-    st.error("Failed to decode QR.")
-
-
-
 # app.py
 import streamlit as st
-from PIL import Image
-from scripts.ai_feature_extractor import extract_features
-from scripts.generate_qr import generate_qr_for_product
-from scripts.decode_qr import decode_qr
+import numpy as np
+from scripts.decode_qr import decode_qr_to_features
 
-st.set_page_config(page_title="AI Cloth Verification", layout="centered")
-st.title("✅ AI Cloth Verification")
-st.write("Upload a cloth image to verify the product using AI")
+st.set_page_config(page_title="✅ AI Cloth Verification", layout="centered")
 
-# --- Step 0: Upload Image ---
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+st.title("👕 AI Cloth Verification System")
+
+uploaded_file = st.file_uploader("Upload a QR Code Image", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
-    # Open image as PIL and convert to RGB
-    img = Image.open(uploaded_file).convert("RGB")
-    st.image(img, caption="Uploaded Image", use_column_width=True)
-    
-    st.write("Processing the image with AI...")
+    st.image(uploaded_file, caption="Uploaded QR Code", use_container_width=True)
 
-    # --- Step 1: Extract Features ---
-    try:
-        features = extract_features(img)  # Pass PIL Image directly
-        st.success("Features extracted successfully ✅")
-    except Exception as e:
-        st.error(f"Error in feature extraction: {e}")
-        st.stop()
+    with open("temp_qr_image.png", "wb") as f:
+        f.write(uploaded_file.getbuffer())
 
-    # --- Step 2: Generate QR Code ---
-    try:
-        qr_img = generate_qr_for_product(features)
-        st.image(qr_img, caption="QR Code", width=250)
-        st.success("QR code generated ✅")
-    except Exception as e:
-        st.error(f"Error generating QR code: {e}")
-        st.stop()
+    features = decode_qr_to_features("temp_qr_image.png")
 
-    # --- Step 3: Optional Verification ---
-    try:
-        decoded_features = decode_qr(qr_img)
-        st.write("Decoded features from QR:")
-        st.write(decoded_features[:10], "...")  # show first 10 values
-        st.success("QR code verified successfully ✅")
-    except Exception as e:
-        st.error(f"Error decoding QR code: {e}")
+    if features is None:
+        st.error("⚠️ QR decoding not available or failed due to missing dependencies.")
+        st.info("ℹ️ Try reloading or ensure required libraries (OpenCV, pyzbar) are installed.")
+    else:
+        st.success("✅ QR decoded successfully!")
+        st.write("Extracted Features (sample):")
+        st.write(features[:10])
+else:
+    st.info("📤 Please upload a QR code image to start.")
