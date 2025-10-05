@@ -1,9 +1,8 @@
 streamlit==1.50.0
+opencv-python
 numpy
 pillow
 torch
 torchvision
 qrcode
 pyzbar
-
-
