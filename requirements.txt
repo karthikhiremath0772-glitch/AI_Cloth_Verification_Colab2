@@ -4,3 +4,6 @@ pillow
 torch
 torchvision
 qrcode
+pyzbar
+
+
