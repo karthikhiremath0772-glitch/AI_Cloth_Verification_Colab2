@@ -1,3 +1,14 @@
+from scripts.decode_qr import decode_qr_to_features
+
+# Example
+features = decode_qr_to_features("path/to/qr_image.png")
+if features is not None:
+    st.write("QR decoded successfully!", features)
+else:
+    st.error("Failed to decode QR.")
+
+
+
 # app.py
 import streamlit as st
 from PIL import Image
