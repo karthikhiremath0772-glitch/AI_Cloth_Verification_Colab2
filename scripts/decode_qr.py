@@ -1,47 +1,49 @@
 # scripts/decode_qr.py
-import cv2
+"""
+Safe QR decoder — won't crash even if OpenCV or pyzbar aren't available.
+"""
+
 import base64
 import numpy as np
 from typing import Optional
+from PIL import Image
+
+# Try importing optional libraries
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+    print("⚠️ OpenCV (cv2) not installed — QR decoding will be disabled.")
+
+try:
+    from pyzbar.pyzbar import decode
+except ImportError:
+    decode = None
+    print("⚠️ pyzbar not installed — QR decoding will be disabled.")
+
 
 def decode_qr_to_features(image_path: str) -> Optional[np.ndarray]:
     """
-    Decodes a QR code image and extracts embedded feature data (base64-encoded).
-
-    Args:
-        image_path (str): Path to the QR image.
-
-    Returns:
-        np.ndarray or None: Decoded 512-dimensional feature vector, or None if decoding fails.
+    Attempts to decode QR code and extract feature data from it.
+    Returns numpy array or None if not possible.
     """
-    # Load the image
-    img = cv2.imread(image_path)
-    if img is None:
-        print(f"⚠️ Could not read image: {image_path}")
-        return None
-
-    # Initialize OpenCV QRCode detector
-    detector = cv2.QRCodeDetector()
-
-    # Detect and decode the QR
-    data, bbox, _ = detector.detectAndDecode(img)
-
-    if not data:
-        print("⚠️ No QR code detected.")
+    # Check dependencies
+    if cv2 is None or decode is None:
+        print("❌ Missing dependencies. Cannot decode QR in this environment.")
         return None
 
     try:
-        # Decode base64 -> float32 vector
-        decoded_bytes = base64.b64decode(data)
-        features = np.frombuffer(decoded_bytes, dtype=np.float32)
+        img = cv2.imread(image_path)
+        qr_data = decode(Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)))
 
-        # Confirm expected shape
-        if features.size == 512:
-            print("✅ Successfully decoded 512-D features from QR")
-            return features
-        else:
-            print(f"⚠️ Decoded vector length = {features.size} (expected 512)")
-            return features
+        if not qr_data:
+            print("⚠️ No QR code detected in the image.")
+            return None
+
+        qr_text = qr_data[0].data.decode("utf-8")
+        arr = np.frombuffer(base64.b64decode(qr_text), dtype=np.float32)
+        return arr
+
     except Exception as e:
-        print(f"❌ Error decoding QR data: {e}")
+        print(f"❌ QR decoding failed: {e}")
         return None
