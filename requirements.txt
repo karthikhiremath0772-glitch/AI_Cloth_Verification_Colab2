@@ -1,8 +1,5 @@
-streamlit==1.50.0
+streamlit
 opencv-python
 numpy
-pillow
-torch
-torchvision
-qrcode
+Pillow
 pyzbar
