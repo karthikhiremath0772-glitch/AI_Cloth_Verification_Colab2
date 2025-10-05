@@ -1,7 +1,4 @@
-import os
-import numpy as np
-
-def verify_return(return_img_path, product_folder):
+def verify_returned_product(return_img_path, product_folder):
     """
     Verify a returned product against stored product features.
     """
@@ -29,4 +26,4 @@ def verify_return(return_img_path, product_folder):
     )
     
     is_verified = sim > 0.9  # Threshold
-    return is_verified, float(sim)
+    return "Verified" if is_verified else "Not Verified", float(sim)
