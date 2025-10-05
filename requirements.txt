@@ -1,5 +1,11 @@
+# --- Core dependencies ---
 streamlit
 opencv-python
 numpy
 Pillow
 pyzbar
+
+# --- Optional helpers ---
+scikit-learn
+torch
+torchvision
