@@ -1,20 +1,29 @@
-import numpy as np
-
-def verify_returned_product(original_features: np.ndarray, returned_features: np.ndarray, threshold: float = 0.9):
+def verify_returned_product(return_img_path, product_folder):
     """
-    Compare original product features with returned product features.
-
-    Args:
-        original_features (np.ndarray): Features stored in QR
-        returned_features (np.ndarray): Features extracted from returned image
-        threshold (float): Cosine similarity threshold
-
-    Returns:
-        tuple: (is_verified: bool, similarity_score: float)
+    Verify a returned product against stored product features.
     """
-    # Cosine similarity
-    sim = np.dot(original_features, returned_features) / (
-        np.linalg.norm(original_features) * np.linalg.norm(returned_features)
+    # Extract ID from returned image filename
+    returned_id = os.path.splitext(os.path.basename(return_img_path))[0].replace('_return', '')
+    
+    # Construct path to feature file
+    feature_file = os.path.join(product_folder, f"{returned_id}_features.npy")
+    
+    if not os.path.exists(feature_file):
+        return False, 0.0  # Cannot verify if features missing
+    
+    # Load product features
+    product_features = np.load(feature_file)
+    
+    # Extract features from returned image using AI model
+    from scripts.ai_feature_extractor import extract_features
+    from PIL import Image
+    img = Image.open(return_img_path)
+    returned_features = extract_features(img)
+    
+    # Compute cosine similarity
+    sim = np.dot(returned_features, product_features.T) / (
+        np.linalg.norm(returned_features) * np.linalg.norm(product_features)
     )
-    is_verified = sim >= threshold
-    return is_verified, float(sim)
+    
+    is_verified = sim > 0.9  # Threshold
+    return "Verified" if is_verified else "Not Verified", float(sim)
