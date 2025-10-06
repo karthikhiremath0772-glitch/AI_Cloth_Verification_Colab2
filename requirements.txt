@@ -1,7 +1,7 @@
-streamlit
+streamlit==1.26.1
+torch
+torchvision
 numpy
 Pillow
 opencv-python
 qrcode
-torch
-torchvision
