@@ -1,32 +1,20 @@
-# scripts/decode_qr.py
+# decode_qr.py
 import cv2
-import base64
 import numpy as np
-from typing import Optional
 
-def decode_qr(image_path: str) -> Optional[np.ndarray]:
-    """
-    Decodes a QR code from an image file and returns the decoded features (numpy array).
-    Returns None if decoding fails.
-    """
+def decode_qr(image_path):
+    """Decode QR code from the given image path using OpenCV."""
     try:
         img = cv2.imread(image_path)
-        if img is None:
-            print("⚠️ Failed to read image for decoding.")
-            return None
-
         detector = cv2.QRCodeDetector()
-        data, _, _ = detector.detectAndDecode(img)
-
-        if not data:
-            print("⚠️ No QR code detected.")
+        data, points, _ = detector.detectAndDecode(img)
+        if data:
+            print("Decoded data:", data)
+            return data
+        else:
+            print("⚠️ No QR code found in the image.")
             return None
-
-        # Convert from base64 back to numpy array
-        decoded_bytes = base64.b64decode(data)
-        arr = np.frombuffer(decoded_bytes, dtype=np.float32)
-        return arr
-
     except Exception as e:
-        print(f"QR Decoding Error: {e}")
+        print("⚠️ Error decoding QR:", e)
         return None
+
