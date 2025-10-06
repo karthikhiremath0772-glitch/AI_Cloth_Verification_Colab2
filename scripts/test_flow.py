@@ -1,37 +1,44 @@
-import os
 from PIL import Image
-import numpy as np
 from scripts.ai_feature_extractor import extract_features
 from scripts.generate_qr import generate_qr_for_product
-from scripts.verify_return import verify_return
+from scripts.decode_qr import decode_qr
+from scripts.verify_return import verify_returned_product
+import os
 
-# Paths (update if your structure is different)
-products_folder = os.path.join(os.getcwd(), 'data', 'products')
-returns_folder = os.path.join(os.getcwd(), 'data', 'returns')
+# --- Test Images ---
+original_img_path = "test_images/original.jpg"  # put a sample image here
+returned_img_path = "test_images/returned.jpg"  # put a returned product image here
+qr_path = "test_qr.png"
 
-# ===== Step 1: Add a new product =====
-product_id = 'sample_product'  # You can change this name
-
-# Upload your product image to data/products/ folder manually
-img_path = os.path.join(products_folder, f'{product_id}.jpg')
-img = Image.open(img_path)
+# Load original image
+original_img = Image.open(original_img_path).convert("RGB")
 
 # Extract features
-features = extract_features(img)
-np.save(os.path.join(products_folder, f"{product_id}_features.npy"), features)
+original_features = extract_features(original_img)
+print("Original features extracted ✅")
 
 # Generate QR
-qr_path = generate_qr_for_product(product_id, products_folder)
+qr_img = generate_qr_for_product(original_features)
+qr_img.save(qr_path)
+print(f"QR code saved as {qr_path} ✅")
 
-print("✅ Product added")
-print("Features saved at:", os.path.join(products_folder, f"{product_id}_features.npy"))
-print("QR code saved at:", qr_path)
+# Decode QR
+decoded_features = decode_qr(qr_path)
+if decoded_features is not None:
+    print("QR code decoded successfully ✅")
+else:
+    print("⚠️ QR decoding failed")
 
-# ===== Step 2: Verify returned product =====
-# Upload returned image manually to data/returns/ folder
-return_image_path = os.path.join(returns_folder, f"{product_id}_return.jpg")
+# Load returned product image
+returned_img = Image.open(returned_img_path).convert("RGB")
+returned_features = extract_features(returned_img)
+print("Returned product features extracted ✅")
 
-is_verified, similarity = verify_return(return_image_path, products_folder)
-print("\n✅ Returned product verification")
-print(f"Verified: {is_verified}")
-print(f"Similarity Score: {similarity:.2f}")
+# Verify
+result, score = verify_returned_product(decoded_features, returned_features)
+print(f"Verification Result: {result}")
+print(f"Similarity Score: {score:.2f}")
+
+# Cleanup
+if os.path.exists(qr_path):
+    os.remove(qr_path)
