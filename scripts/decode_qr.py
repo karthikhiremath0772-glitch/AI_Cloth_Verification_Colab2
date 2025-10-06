@@ -1,13 +1,10 @@
-import cv2
-import numpy as np
+import qrcode
+from io import BytesIO
 
-def decode_qr_opencv(qr_path):
-    # Load image
-    img = cv2.imread(qr_path)
-    detector = cv2.QRCodeDetector()
-    data, points, _ = detector.detectAndDecode(img)
-    if not data:
-        raise ValueError("QR code not found")
-    # Convert string back to features (assume comma-separated floats)
-    features = np.array([float(x) for x in data.split(',')])
-    return features
+def generate_qr_for_product(features):
+    features_str = ','.join([str(f) for f in features])
+    qr = qrcode.QRCode(version=1, box_size=10, border=4)
+    qr.add_data(features_str)
+    qr.make(fit=True)
+    img = qr.make_image(fill='black', back_color='white')
+    return img, features_str
