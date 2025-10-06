@@ -25,17 +25,16 @@ if uploaded_file:
     st.success("Features extracted successfully ✅")
 
     # --- Step 3: Generate QR Code ---
-    st.subheader("Generated QR Code")
-    qr_img = generate_qr_for_product(features)
+qr_img = generate_qr_for_product(features)
 
-    # Ensure it's a proper image object
-    if hasattr(qr_img, "save"):
-        qr_path = "qr_code.png"
-        qr_img.save(qr_path)
-        st.image(qr_img, caption="QR Code", width=250)
-        st.success("QR code generated ✅")
-    else:
-        st.error("Failed to generate QR code image. Please check generate_qr.py")
+# Ensure it's a valid image
+if isinstance(qr_img, Image.Image):
+    qr_path = "qr_code.png"
+    qr_img.save(qr_path)
+    st.image(np.array(qr_img), caption="QR Code", width=250)
+    st.success("QR code generated ✅")
+else:
+    st.error("❌ QR generation failed. Invalid image format.")
 
     # --- Step 4: Verify Returned Product ---
     st.subheader("Verify Returned Product")
