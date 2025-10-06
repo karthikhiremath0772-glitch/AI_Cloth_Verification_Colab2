@@ -1,35 +1,34 @@
+# scripts/generate_qr.py
 import qrcode
-import io
-import numpy as np
-import base64
 from PIL import Image
+import io
+import base64
+import numpy as np
 
-def generate_qr_for_product(features: np.ndarray) -> Image.Image:
+def generate_qr_for_product(features):
     """
-    Generates a QR code image for given product features.
-    Encodes features using base64 to reduce size.
-
-    Args:
-        features (np.ndarray): 1D NumPy array of product features
-
-    Returns:
-        PIL.Image: QR code image
+    Generates a QR code from the product's extracted features (list or np.array).
+    Returns a PIL Image object of the QR code.
     """
-    # Convert features to bytes
-    features_bytes = features.tobytes()
+    # Convert numpy array to base64 for compact encoding
+    if isinstance(features, np.ndarray):
+        features_str = base64.b64encode(features.tobytes()).decode('utf-8')
+    else:
+        features_str = str(features)
 
-    # Encode as base64 string
-    features_b64 = base64.b64encode(features_bytes).decode('utf-8')
-
-    # Create QR code
+    # Generate the QR code
     qr = qrcode.QRCode(
-        version=None,  # Let qrcode lib choose the minimal version
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        version=1,
         box_size=10,
-        border=4,
+        border=4
     )
-    qr.add_data(features_b64)
+    qr.add_data(features_str)
     qr.make(fit=True)
 
-    qr_img = qr.make_image(fill_color="black", back_color="white")
-    return qr_img
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    # Ensure the result is a proper PIL image
+    if not isinstance(img, Image.Image):
+        img = img.convert("RGB")
+
+    return img
