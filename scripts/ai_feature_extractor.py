@@ -1,18 +1,14 @@
-# Use PyTorch ResNet18 for feature extraction
-from PIL import Image
+# Simple AI feature extractor using PyTorch pretrained model (CPU only)
 import torch
-import torchvision.transforms as transforms
 import torchvision.models as models
-import numpy as np
+import torchvision.transforms as transforms
+from PIL import Image
 
-# Load pre-trained model
-resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
-resnet.eval()  # Set to evaluation mode
+# Load ResNet18 pretrained (CPU)
+model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+model.eval()  # evaluation mode
 
-# Remove the final classification layer
-feature_extractor = torch.nn.Sequential(*list(resnet.children())[:-1])
-
-# Transform function
+# Transform for images
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
@@ -21,11 +17,7 @@ transform = transforms.Compose([
 ])
 
 def extract_features(img: Image.Image):
-    """
-    Extract deep features from image using ResNet18
-    """
-    img_t = transform(img).unsqueeze(0)  # Add batch dimension
+    img_t = transform(img).unsqueeze(0)  # add batch dim
     with torch.no_grad():
-        features = feature_extractor(img_t)
-    features = features.flatten().numpy()
-    return features
+        features = model(img_t)
+    return features.squeeze().tolist()  # return as list of floats
