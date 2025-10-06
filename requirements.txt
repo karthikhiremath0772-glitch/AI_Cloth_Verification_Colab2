@@ -6,3 +6,5 @@ torchvision
 Pillow
 numpy
 qrcode
+
+
