@@ -7,6 +7,7 @@ from scripts.ai_feature_extractor import extract_features
 from scripts.generate_qr import generate_qr_for_product
 from scripts.verify_return import verify_returned_product
 
+
 st.set_page_config(page_title="✅ AI Cloth Verification", layout="centered")
 st.title("👕 AI Cloth Verification System")
 
