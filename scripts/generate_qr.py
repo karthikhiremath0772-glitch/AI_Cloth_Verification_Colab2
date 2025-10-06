@@ -1,17 +1,35 @@
 import qrcode
-import os
+import io
+import numpy as np
+import base64
+from PIL import Image
 
-def generate_qr_for_product(product_id, save_folder):
+def generate_qr_for_product(features: np.ndarray) -> Image.Image:
     """
-    Generates a QR code for a product and saves it in the product folder.
+    Generates a QR code image for given product features.
+    Encodes features using base64 to reduce size.
+
+    Args:
+        features (np.ndarray): 1D NumPy array of product features
+
+    Returns:
+        PIL.Image: QR code image
     """
-    if not os.path.exists(save_folder):
-        os.makedirs(save_folder)
-    
-    qr_data = f"Product ID: {product_id}"
-    qr_img = qrcode.make(qr_data)
-    
-    qr_path = os.path.join(save_folder, f"{product_id}_qr.png")
-    qr_img.save(qr_path)
-    
-    return qr_path
+    # Convert features to bytes
+    features_bytes = features.tobytes()
+
+    # Encode as base64 string
+    features_b64 = base64.b64encode(features_bytes).decode('utf-8')
+
+    # Create QR code
+    qr = qrcode.QRCode(
+        version=None,  # Let qrcode lib choose the minimal version
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(features_b64)
+    qr.make(fit=True)
+
+    qr_img = qr.make_image(fill_color="black", back_color="white")
+    return qr_img
