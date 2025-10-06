@@ -1,26 +1,19 @@
-import qrcode
+from pyzbar.pyzbar import decode
 from PIL import Image
-import io
 import numpy as np
 
-def generate_qr_for_product(features):
+def decode_qr(qr_path):
     try:
-        if isinstance(features, np.ndarray):
-            data_str = np.array2string(features.flatten(), precision=4, separator=",")
-        else:
-            data_str = str(features)
+        img = Image.open(qr_path).convert("RGB")
+        decoded = decode(img)
+        if not decoded:
+            print("No QR code found.")
+            return None
 
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=10,
-            border=4,
-        )
-        qr.add_data(data_str)
-        qr.make(fit=True)
-        qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
-
-        return qr_img
+        data = decoded[0].data.decode("utf-8")
+        # Convert string data back to numpy array
+        features = np.fromstring(data.replace("[", "").replace("]", ""), sep=",")
+        return features
     except Exception as e:
-        print("QR Generation Error:", e)
+        print("Decode error:", e)
         return None
