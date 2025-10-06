@@ -1,5 +1,7 @@
 streamlit
 opencv-python-headless
 pyzbar
+torch
+torchvision
 Pillow
 numpy
