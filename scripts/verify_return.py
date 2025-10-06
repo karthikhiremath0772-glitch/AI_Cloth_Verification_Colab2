@@ -1,30 +1,21 @@
-# def verify_returned_product(return_img_path, product_folder):
-#     """
-#     Verify a returned product against stored product features.
-#     """
-#     # Extract ID from returned image filename
-#     returned_id = os.path.splitext(os.path.basename(return_img_path))[0].replace('_return', '')
-    
-#     # Construct path to feature file
-#     feature_file = os.path.join(product_folder, f"{returned_id}_features.npy")
-    
-#     if not os.path.exists(feature_file):
-#         return False, 0.0  # Cannot verify if features missing
-    
-#     # Load product features
-#     product_features = np.load(feature_file)
-    
-#     # Extract features from returned image using AI model
-#     from scripts.ai_feature_extractor import extract_features
-#     from PIL import Image
-#     img = Image.open(return_img_path)
-#     returned_features = extract_features(img)
-    
-#     # Compute cosine similarity
-#     sim = np.dot(returned_features, product_features.T) / (
-#         np.linalg.norm(returned_features) * np.linalg.norm(product_features)
-#     )
-    
-#     is_verified = sim > 0.9  # Threshold
-#     return "Verified" if is_verified else "Not Verified", float(sim)
+import numpy as np
 
+def verify_returned_product(original_features, returned_features):
+    """
+    Compare original and returned features using cosine similarity
+    """
+    if original_features is None or returned_features is None:
+        return "Failed", 0.0
+
+    # Convert to numpy arrays
+    orig = np.array(original_features)
+    ret = np.array(returned_features)
+
+    # Normalize
+    orig_norm = orig / (np.linalg.norm(orig) + 1e-10)
+    ret_norm = ret / (np.linalg.norm(ret) + 1e-10)
+
+    # Cosine similarity
+    similarity = float(np.dot(orig_norm, ret_norm))
+    result = "Match" if similarity > 0.95 else "Mismatch"
+    return result, similarity
