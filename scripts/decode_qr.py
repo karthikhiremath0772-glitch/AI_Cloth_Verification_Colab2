@@ -1,49 +1,27 @@
-# scripts/decode_qr.py
-"""
-Safe QR decoder — won't crash even if OpenCV or pyzbar aren't available.
-"""
-
-import base64
+import cv2
 import numpy as np
-from typing import Optional
-from PIL import Image
+import base64
 
-# Try importing optional libraries
-try:
-    import cv2
-except ImportError:
-    cv2 = None
-    print("⚠️ OpenCV (cv2) not installed — QR decoding will be disabled.")
-
-try:
-    from pyzbar.pyzbar import decode
-except ImportError:
-    decode = None
-    print("⚠️ pyzbar not installed — QR decoding will be disabled.")
-
-
-def decode_qr_to_features(image_path: str) -> Optional[np.ndarray]:
+def decode_qr(qr_img_path: str) -> np.ndarray:
     """
-    Attempts to decode QR code and extract feature data from it.
-    Returns numpy array or None if not possible.
+    Decode a QR code image back into product features.
+
+    Args:
+        qr_img_path (str): Path to QR code image
+
+    Returns:
+        np.ndarray: Original feature vector
     """
-    # Check dependencies
-    if cv2 is None or decode is None:
-        print("❌ Missing dependencies. Cannot decode QR in this environment.")
-        return None
-
-    try:
-        img = cv2.imread(image_path)
-        qr_data = decode(Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)))
-
-        if not qr_data:
-            print("⚠️ No QR code detected in the image.")
-            return None
-
-        qr_text = qr_data[0].data.decode("utf-8")
-        arr = np.frombuffer(base64.b64decode(qr_text), dtype=np.float32)
-        return arr
-
-    except Exception as e:
-        print(f"❌ QR decoding failed: {e}")
-        return None
+    # Load QR code image
+    img = cv2.imread(qr_img_path)
+    detector = cv2.QRCodeDetector()
+    data, _, _ = detector.detectAndDecode(img)
+    if not data:
+        raise ValueError("QR code could not be decoded")
+    
+    # Decode base64 to bytes
+    features_bytes = base64.b64decode(data)
+    
+    # Convert bytes back to NumPy array (float32)
+    features = np.frombuffer(features_bytes, dtype=np.float32)
+    return features
