@@ -1,7 +1,7 @@
 streamlit==1.26.1
-torch
-torchvision
+torch==2.2.0+cpu
+torchvision==0.17.1+cpu
 numpy
 Pillow
-opencv-python
 qrcode
+scipy
