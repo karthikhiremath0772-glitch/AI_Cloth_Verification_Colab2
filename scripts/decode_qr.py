@@ -1,9 +1,8 @@
-# scripts/decode_qr.py
 import cv2
 
 def decode_qr(image_path):
     """
-    Decode QR code using OpenCV (works on Streamlit Cloud, Colab, or local)
+    Decode QR code using OpenCV
     """
     try:
         detector = cv2.QRCodeDetector()
@@ -14,8 +13,9 @@ def decode_qr(image_path):
 
         data, points, _ = detector.detectAndDecode(img)
         if data:
-            print("✅ QR Code decoded successfully:", data)
-            return data
+            # Convert back to numpy array
+            features_list = list(map(float, data.split(',')))
+            return features_list
         else:
             print("⚠️ No QR code found in the image.")
             return None
